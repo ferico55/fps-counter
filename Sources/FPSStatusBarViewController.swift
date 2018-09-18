@@ -30,6 +30,12 @@ class FPSStatusBarViewController: UIViewController {
 
         self.commonInit()
     }
+    
+    convenience init(withInterval interval: CGFloat) {
+        self.init(nibName: nil, bundle: nil)
+        fpsCounter.notificationDelay = TimeInterval(interval)
+        self.commonInit()
+    }
 
     private func commonInit() {
         NotificationCenter.default.addObserver(self,
@@ -136,6 +142,17 @@ public extension FPSCounter {
                 inRunLoop: runloop ?? .main,
                 mode: mode ?? .commonModes
             )
+        }
+    }
+    
+    @objc public class func showInStatusBar(_ application: UIApplication, withInterval interval: CGFloat) {
+        let window = FPSStatusBarViewController.statusBarWindow
+        window.frame = application.statusBarFrame
+        window.isHidden = false
+        
+        if let controller = window.rootViewController as? FPSStatusBarViewController {
+            controller.fpsCounter.notificationDelay = TimeInterval(interval)
+            controller.fpsCounter.startTracking(inRunLoop: .main, mode:.commonModes)
         }
     }
 
