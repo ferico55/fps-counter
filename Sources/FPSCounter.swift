@@ -50,6 +50,8 @@ public class FPSCounter: NSObject {
 
     private let displayLink: CADisplayLink
     private let displayLinkProxy: DisplayLinkProxy
+    internal var elapsedFrames: Int = 0
+    internal var brokenFrames: Int = 0
 
     /// Create a new FPSCounter.
     ///
@@ -79,7 +81,7 @@ public class FPSCounter: NSObject {
     public weak var delegate: FPSCounterDelegate?
 
     /// Delay between FPS updates. Longer delays mean more averaged FPS numbers.
-    @objc public var notificationDelay: TimeInterval = 1.0
+    @objc public var notificationDelay: TimeInterval = 0.1
 
 
     // MARK: - Tracking
@@ -104,6 +106,8 @@ public class FPSCounter: NSObject {
 
         self.runloop = runloop
         self.mode = mode
+        self.elapsedFrames = 0
+        self.brokenFrames = 0
         self.displayLink.add(to: runloop, forMode: mode)
     }
 
@@ -144,6 +148,9 @@ public class FPSCounter: NSObject {
     }
 
     private func notifyUpdateForElapsedTime(_ elapsedTime: CFAbsoluteTime) {
+        self.elapsedFrames += Int(elapsedTime / 0.01666667)
+        self.brokenFrames += abs(10 - self.numberOfFrames)
+
         let fps = Int(round(Double(self.numberOfFrames) / elapsedTime))
         self.delegate?.fpsCounter(self, didUpdateFramesPerSecond: fps)
     }
